@@ -13,7 +13,7 @@
     * [PushPlus](https://www.pushplus.plus/) (微信公众号免签推送)
     * [Bark](https://github.com/Finb/Bark) (iOS 专属系统级无缝推送)
     * [Server酱](https://sct.ftqq.com/) (全平台跨生态支持)
-* ☁️ **完美适配云端部署**：配置参数全部抽离为环境变量 (Env) 注入，完美适配 GitHub Actions 或各类 Serverless 云函数，实现零成本自动化挂机。
+* ☁️ **完美适配云端部署**：账号、推送密钥及所有宿舍参数全部抽离为环境变量 (Env) 注入，代码零入侵，完美适配 GitHub Actions 或各类 Serverless 云函数，实现零成本自动化挂机。
 
 ---
 
@@ -28,32 +28,32 @@ pip install requests ddddocr beautifulsoup4 pycryptodome
 
 ```
 
-### 2. 配置宿舍参数 (关键步骤)
+### 2. 获取宿舍参数 (关键抓包步骤)
 
-打开主程序文件，定位到代码底部的 `icard_data` 字典。你需要将这里的参数替换为你自己宿舍的专属 ID：
+由于每个人的宿舍对应唯一的 ID，你需要先通过浏览器抓包获取属于你自己的 5 个宿舍参数。
 
-```python
-icard_data = {
-    "type": "IEC",
-    "level": "3",                        # 替换
-    "feeitemid": "448",                  # 替换为你的校区参数
-    "xiaoyu_id": "3&沁园",                # 替换为你的小区参数
-    "loudong_id": "23&沁园30号栋",         # 替换为你的楼栋参数
-    "room_id": "4186&135"                 # 替换为你的房间号参数
-}
+> **💡 抓包提示：**
+> 1. 在电脑浏览器登录 [南信大一卡通网页版](https://icard.nuist.edu.cn)。
+> 2. 按 `F12` 打开开发者工具，进入“网络 (Network)”面板。
+> 3. 在页面上手动查询一次电费。
+> 4. 找到名为 `getThirdData` 的网络请求，查看其 **负载 (Payload)** 或 **表单数据 (Form Data)**。
+> 5. 记录下里面的 `level`, `feeitemid`, `xiaoyu_id`, `loudong_id`, `room_id` 这 5 个对应的值。
+> 
+> 
 
-```
+### 3. 配置环境变量与运行
 
-> **💡 抓包提示：** 建议在电脑浏览器登录[南信大一卡通网页版](https://icard.nuist.edu.cn)，按 `F12` 打开开发者工具，进入“网络 (Network)”面板。在页面上手动查询一次电费，查看抓取到的请求负载 (Payload)，即可获取上述专属 ID。
-
-### 3. 配置账号与通知密钥
-
-系统采用环境变量来保护你的账号隐私。请提供以下参数配置（可通过环境变量导出，或仅供本地测试时直接填入代码底部的 `os.getenv` 默认值中）：
+为了保护账号隐私与方便云端部署，本脚本采用环境变量读取配置。你无需修改代码，只需在运行前配置以下环境变量：
 
 | 变量名 | 说明 | 必填状态 |
 | --- | --- | --- |
 | `NUIST_USER` | 南信大统一身份认证账号 (学号) | ✅ 必填 |
 | `NUIST_PWD` | 统一身份认证密码 | ✅ 必填 |
+| `ICARD_LEVEL` | 宿舍层级参数 (对应抓包的 `level`) | ✅ 必填 |
+| `ICARD_FEEITEMID` | 缴费项目号 (对应抓包的 `feeitemid`) | ✅ 必填 |
+| `ICARD_XIAOYU` | 校区/园区 ID (对应抓包的 `xiaoyu_id`) | ✅ 必填 |
+| `ICARD_LOUDONG` | 楼栋 ID (对应抓包的 `loudong_id`) | ✅ 必填 |
+| `ICARD_ROOM` | 房间号 ID (对应抓包的 `room_id`) | ✅ 必填 |
 | `PUSHPLUS_TOKEN` | PushPlus 的 Token (微信接收) | 选填 |
 | `BARK_KEY` | Bark 的专属 URL Key (iOS 接收) | 选填 |
 | `SERVERCHAN_KEY` | Server酱 SendKey | 选填 |
@@ -61,13 +61,24 @@ icard_data = {
 *本地运行测试示例 (Linux/macOS):*
 
 ```bash
+# 1. 账号与推送配置
 export NUIST_USER="2024xxxxxxxx"
 export NUIST_PWD="YourPassword"
 export PUSHPLUS_TOKEN="YourPushPlusToken"
+
+# 2. 宿舍专属参数配置 (注意：含特殊字符 & 的中文字符串必须加双引号)
+export ICARD_LEVEL="3"
+export ICARD_FEEITEMID="448"
+export ICARD_XIAOYU="3&沁园"
+export ICARD_LOUDONG="23&沁园30号栋"
+export ICARD_ROOM="4186&135"
+
+# 3. 运行脚本
 python main.py
 
 ```
 
+---
 
 ## ⚠️ 免责声明
 
