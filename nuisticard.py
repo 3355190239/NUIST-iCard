@@ -303,12 +303,12 @@ if __name__ == '__main__':
     if cas.login(): 
         # 宿舍请求体参数
         icard_data = {
-            "type": "IEC",
-            "level": "3",                        
-            "feeitemid": "448",                  
-            "xiaoyu_id": "3&沁园",                
-            "loudong_id": "23&沁园30号栋",         
-            "room_id": "4186&135"                 
+            "type": "IEC",  # 费用类型一般固定不变
+            "level": os.getenv("ICARD_LEVEL", "3"),                        
+            "feeitemid": os.getenv("ICARD_FEEITEMID", "448"),                  
+            "xiaoyu_id": os.getenv("ICARD_XIAOYU", "3&沁园"),                
+            "loudong_id": os.getenv("ICARD_LOUDONG", "23&沁园30号栋"),        
+            "room_id": os.getenv("ICARD_ROOM", "4186&135")                
         }
         
         # 授权并查询
